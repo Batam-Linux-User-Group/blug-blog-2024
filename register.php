@@ -1,3 +1,9 @@
+<?php
+session_start();
+if (isset($_SESSION["user"])){
+  header("Location: index.php");
+}
+?>
 <!doctype html>
 <html lang="en">
 
@@ -15,29 +21,87 @@
   <div class="container-fluid">
     <div class="row justify-content-center align-item-center d-flex">
       <div class="col position-absolute top-50 start-50 translate-middle">
-        <form class="form-login mx-auto mt-2.5">
+        <form class="form-login mx-auto mt-2.5" action="register.php" method="post">
           <h2 class="text-center">Register</h2>
           <hr>
+          <?php
+          if (isset($_POST["submit"]))
+          {
+            $username = $_POST["username"];
+            $email = $_POST["email"];
+            $password = $_POST["password"];
+            $passwordRepeat = $_POST["passwordRepeat"];
+            $errors = array();
+
+            $passwordhash = password_hash($password, PASSWORD_DEFAULT);
+
+            //Membuat program error
+            if (empty($username) OR empty($email) OR empty($password)){
+              array_push($errors, "All fields are required");
+            }
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)){
+              array_push($errors, "Email is not valid");
+            }
+            if (strlen($password) <8 ){
+              array_push($errors, "Password must be at least 8 characters long");
+            }
+            if ($password!==$passwordRepeat){
+              array_push($errors, "Password does'nt match");
+            }
+
+            //memanggil file connect.php
+            require_once "connect.php";
+
+            //mengecek email
+            $sql = "SELECT * FROM user where email = '$email'";
+            $result = mysqli_query($conn, $sql);
+            $rowCount = mysqli_num_rows($result);
+            if ($rowCount>0){
+              array_push($errors, "email sudah ada");
+            }
+            
+            if ((count($errors)>0)){
+              foreach($errors as $error){
+                echo "<div class='alert alert-danger'>$error</div>";
+              }
+            }
+            //menyimpan data ke databas
+            else{
+              $sql = "INSERT INTO user (user, email, pass) VALUES (?,?,?)";
+              $stmt = $conn->prepare($sql);
+              if ($stmt){
+                $stmt->bind_param("sss", $username, $email, $passwordhash);
+                $stmt->execute();
+                echo "<div class='alert alert-success'>You are Registered</div>";
+              }
+              else{
+                die("Something went wrong");
+              }
+            }
+
+          }
+          
+          ?>
           <div class="mb-3">
             <label for="exampleInputUsername" class="form-label">Username</label>
-            <input type="text" class="form-control" id="exampleInputUsername" aria-describedby="emailHelp"
+            <input type="text" class="form-control" name="username" id="exampleInputUsername" aria-describedby="emailHelp"
               placeholder="Username" required>
           </div>
           <div class="mb-3">
             <label for="exampleInputemail" class="form-label">Email Addres</label>
-            <input type="email" class="form-control" id="exampleInputEmail" placeholder="example@gmail.com" required>
+            <input type="email" class="form-control" name="email" id="exampleInputEmail" placeholder="example@gmail.com" required>
           </div>
           <div class="mb-3">
             <label for="exampleInputPassword1" class="form-label">Password</label>
-            <input type="password" class="form-control" id="exampleInputPassword1" placeholder="Password" required>
+            <input type="password" class="form-control" name="password" id="exampleInputPassword1" placeholder="Password" required>
           </div>
           <div class="mb-3">
             <label for="exampleInputPassword2" class="form-label">Konfirmasi Password</label>
-            <input type="password" class="form-control" id="exampleInputPassword2" placeholder="Konfirmasi Password"
+            <input type="password" class="form-control" name="passwordRepeat" id="exampleInputPassword2" placeholder="Konfirmasi Password"
               required>
           </div>
           <p class="text-center">Sudah Punya Akun? <a href="login.php">Login</a></p>
-          <button type="submit" class="btn btn-warning w-100">Submit</button>
+          <button type="submit" name="submit" class="btn btn-warning w-100" value="Register">Submit</button>
         </form>
       </div>
     </div>

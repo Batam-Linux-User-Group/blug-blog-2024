@@ -1,3 +1,9 @@
+<?php
+session_start();
+if (isset($_SESSION["user"])){
+  header("Location: index.php");
+}
+?>
 <!doctype html>
 <html lang="en">
 
@@ -15,24 +21,52 @@
   <div class="container-fluid">
     <div class="row justify-content-center align-item-center d-flex">
       <div class="col position-absolute top-50 start-50 translate-middle">
-        <form class="form-login mx-auto mt-2.5">
+        <form class="form-login mx-auto mt-2.5" action="login.php" method="post">
           <img src="src/images/logo.png" alt="" class="img-fluid mx-auto d-block mb-4">
           <hr>
+          <?php
+          if (isset($_POST["submit"])){
+            $email = $_POST["email"];
+            $password = $_POST["password"];
+  
+            require_once "connect.php";
+  
+            //mengecek akun
+            $sql = "SELECT * FROM user WHERE email='$email'";
+            $result = mysqli_query($conn, $sql);
+            $user = mysqli_fetch_array($result, MYSQLI_ASSOC);
+            if ($user){
+              if (password_verify($password, $user["pass"])){
+                session_start();
+                $_SESSION["user"] = "yes";
+                header("Location: index.php");
+                die();
+              }
+              else{
+                echo "<div class='alert alert-danger'>Password does'nt match</div>";
+              }
+            }
+            else{
+              echo "<div class='alert alert-danger'>Email does'nt match</div>";
+            }
+          }
+
+          ?>
           <div class="mb-3">
             <label for="exampleInputEmail1" class="form-label">Email</label>
-            <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp"
+            <input type="email" class="form-control" name="email" id="exampleInputEmail1" aria-describedby="emailHelp"
               placeholder="Email" required>
           </div>
           <div class="mb-3">
             <label for="exampleInputPassword1" class="form-label">Password</label>
-            <input type="password" class="form-control" id="exampleInputPassword1" placeholder="Password" required>
+            <input type="password" class="form-control" name="password" id="exampleInputPassword1" placeholder="Password" required>
           </div>
           <div class="mb-3 form-check">
             <input type="checkbox" class="form-check-input" id="exampleCheck1">
             <label class="form-check-label" for="exampleCheck1">Remember Me</label>
           </div>
           <p class="text-center">Belum Punya Akun? <a href="register.php">Register</a></p>
-          <button type="submit" class="btn btn-warning w-100">Submit</button>
+          <button type="submit" class="btn btn-warning w-100" value="Login" name="submit">Submit</button>
         </form>
       </div>
     </div>
