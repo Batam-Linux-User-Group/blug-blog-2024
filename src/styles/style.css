@@ -22,3 +22,17 @@
     border-radius: 50%;
     border: 2px solid white;
 }
+
+.custom-input{
+    outline: none;
+    border: none;
+    box-shadow: none;
+    width: 100%;
+    background-color: #090A20;
+}
+
+.blog-area{
+    width: 100%;
+    background-color: #090A20;
+    position: absolute;
+}
