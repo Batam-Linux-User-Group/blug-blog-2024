@@ -36,3 +36,11 @@
     background-color: #090A20;
     position: absolute;
 }
+
+ul li {
+    list-style: none;
+}
+
+.d-flex input {
+    border-radius: 25px;
+}
